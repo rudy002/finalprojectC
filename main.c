@@ -4,9 +4,6 @@
 #include <stdbool.h>
 #include <ctype.h>
 #include <time.h>
-#define SIZE 20
-#define SIZE1 3
-//define file
 #define fileEmployee "employee.csv"
 #define fileEmployer "employer.csv"
 #define fileJobs "jobs.csv"
@@ -28,12 +25,6 @@ typedef struct {
     unsigned int no_job;
 
 } Job;
-typedef struct {
-    char *ques[3];
-    char *ans[3];
-    char mailsecurity[100];
-    char password[13];
-} SecurityQuestions;
 typedef struct Job_Request {
     char employer_mail[30];
     char employee_mail[30];
@@ -76,8 +67,8 @@ void conversations(char* mail, char* filename);
 
 //general function
 bool check_phone_number(char* phone){
-    if (strlen(phone) != 10) {
-        return false; }
+    if (strlen(phone) != 10)
+        return false;
     else if (phone[0] == '0' && phone[1] == '5') { return true; }
     else
         return false;
@@ -126,27 +117,31 @@ bool check_password(const char* password){
 
 } //check if password is good or no
 bool check_email (const char* mail) {
-    char special_charcters[] = "!#$%^&*()_+=-`~\'\",\\/";
-    char* token = NULL;
-    char tmp[30], tmp2[30];
-    strcpy(tmp, mail); strcpy(tmp2, mail);
-    token = strtok(tmp, "@");
-    if (!token)return false;
-    //if (!strchr(token, '.'))return false;
-    do {
-        token = strtok(NULL, ".");
-        if (!token)return false;
-    } while (strchr(token, '.'));
-    if (!strstr(mail, "com"))return false;
-    for (int i = 0; i < strlen(mail); i++) {
-        if (strchr(special_charcters, mail[i]))return false;
+    char* token, * user_name, * site_mail, tmp[30], special_charcters[] = "!#$%^&*()+=-`~\'\",\\/";
+    strcpy(tmp, mail);
+    if (!strchr(tmp, '@'))return false;
+    user_name = strtok(tmp, "@");
+    token = strtok(NULL, "@");
+    if (strchr(token, '@'))return false;// check if there's another '@'.
+    int i = 0;
+    while (user_name[i]) { if (strchr(special_charcters, user_name[i++]))return false; }
+    if (strstr(token, ".com")) {
+        site_mail = strtok(token, ".com");
+        token = strtok(NULL, ".com");
     }
-
+    else if (strstr(token, ".il")) {
+        site_mail = strtok(token, ".il");
+        token = strtok(NULL, ".il");
+    }
+    else return false;
+    while (site_mail[i]) { if (strchr(special_charcters, site_mail[i++]))return false; }
     return true;
+
 } //check if mail is good or no
 bool check_id_in_system(char* id, char* f)
 {
-    char ID[9], buffer[256];
+
+    char buffer[512];
     FILE* file;
     file = fopen(f, "r");
     if (!file)
@@ -154,9 +149,9 @@ bool check_id_in_system(char* id, char* f)
         printf("can't open the file\n");
         return false;
     }
-    while (fgets(ID, 512, file) != NULL)
-    {
-        if (strstr(ID, id) != NULL)
+    while(!feof(file)){
+        fgets(buffer, 512, file);
+        if (strstr(buffer, id) != NULL)
         {
             fclose(file);
             return true;
@@ -173,15 +168,25 @@ bool check_comma(char* str){
     else
         return true;
 }
+bool check_ID(const char* id) {
+    if (strlen(id) != 9)
+        return false;
+    else {
+        for (int i = 0; i < 9; ++i) {
+            if (id[i] < '0' || id[i] > '9')
+                return false;
+        }
+        return true;
+    }
+}
+
 void clearBuff(){
     int c;
     while ((c = getchar()) != '\n' && c != EOF) { }
 
 }
 void save_employer(Employer* to_save) {
-    char temp[3];
     char buffer[256];
-    char tmp[256], *token = NULL;
     FILE *f1 = fopen(fileEmployer, "r");
     FILE *f2 = fopen("tmp.csv", "w");
     while (fgets(buffer, 256, f1)) {
@@ -217,7 +222,7 @@ bool upload_cv(Employee* emp) {
         printf("Enter your cv file name: ");
         scanf("%s", cvFileName);
     }while(!check_comma(cvFileName));
-    FILE* tmp = fopen(cvFileName, "r");
+    FILE* tmp = fopen(fileEmployee, "r");
     if (tmp) { strcpy(emp->cv_file_name, cvFileName); fclose(tmp); return true; }
     else { puts("can't open your file, make sure you've wrote the right path to file."); return false; }
 }
@@ -249,7 +254,7 @@ void print_employee(Employee* emp) {
     }
 }               //open file and print specific employee
 bool edit_account(Employee* user) {
-    int ans = 0;
+    int ans;
     char name[20], name1[11], answer[2], age[4];
     printf("hello. you here for edit your account\n");
     print_employee(user);
@@ -361,13 +366,11 @@ char * request_search_job(){
                 return "half-time";
             else
                 return "full-time";
-            break;
 
         case 2:
             printf("you choose : scope Job. enter which kind of work you want to search (example : security-----> ");
             scanf("%s", search);
             return search;
-            break;
 
         case 3:
             do {
@@ -375,16 +378,16 @@ char * request_search_job(){
                 scanf("%s", answers);
             }while(strcmp(answers,"1") != 0  && strcmp(answers,"2") != 0 && strcmp(answers,"3") != 0 && strcmp(answers,"4") != 0 && strcmp(answers,"5") != 0);
 
-            if (strcmp(answers,"1") != 0){
+            if (strcmp(answers,"1") == 0){
                 return "south";
             }
-            else if (strcmp(answers,"2") != 0){
+            else if (strcmp(answers,"2") == 0){
                 return "jerusalem";
             }
-            else if (strcmp(answers,"3") != 0){
+            else if (strcmp(answers,"3") == 0){
                 return "center";
             }
-            else if (strcmp(answers,"4") != 0){
+            else if (strcmp(answers,"4") == 0){
                 return "north";
             }
             else
@@ -396,7 +399,7 @@ char * request_search_job(){
 Job** search_job(char* research) {
     Job** jobs = malloc(sizeof(Job*) * 25);
     char wrd[256], buffer[256], * token = NULL;
-    int find_result = 0, line = 1;
+    int find_result = 0;
     FILE* file;
     file = fopen(fileJobs, "r");
     if (!file) {
@@ -455,36 +458,46 @@ bool print_job(Job job) {
 
 
 void apply_for_job(const char* employee_mail, Job** job_list) {
-    int i = 0, choise;
-    char choice[3], temp[3];
-    while (print_job(*job_list[i++])) {}
-    do {
-        printf("Enter Your Choice: ");
-        scanf("%s", choice);
-        choise = atoi(choice);
-    }while(choise == 0);
-    if (choise >= 1 && choise <= i + 1) {
-        char request[256], buffer[256];
-        strcpy(request, job_list[choise - 1]->mail_Employer); strcat(request, ",");
-        strcat(request, employee_mail); strcat(request, ",");
-        strcat(request, job_list[choise - 1]->company); strcat(request, ",");
-        strcat(request, job_list[choise - 1]->scope); strcat(request, ",");
-        strcat(request, "waiting\n");
-        FILE* f = fopen(fileJobRequest, "a+");
-        if (f) {
-            fputs(request, f);
-            printf("your request added to the system.\n");
-        }
-        fclose(f);
-
+    if(!job_list) {
+        printf("ERROR! no job found\n");
     }
-    else { printf("Wrong Index!\n"); }
+
+
+    else {
+
+        int i = 0, choise;
+        char choice[3];
+        while (print_job(*job_list[i++])) {}
+        do {
+            printf("Enter Your Choice: ");
+            scanf("%s", choice);
+            choise = atoi(choice);
+        } while (choise == 0);
+        if (choise >= 1 && choise <= i + 1) {
+            char request[256];
+            strcpy(request, job_list[choise - 1]->mail_Employer);
+            strcat(request, ",");
+            strcat(request, employee_mail);
+            strcat(request, ",");
+            strcat(request, job_list[choise - 1]->company);
+            strcat(request, ",");
+            strcat(request, job_list[choise - 1]->scope);
+            strcat(request, ",");
+            strcat(request, "waiting\n");
+            FILE *f = fopen(fileJobRequest, "a+");
+            if (f) {
+                fputs(request, f);
+                printf("your request added to the system.\n");
+            }
+            fclose(f);
+
+        } else { printf("Wrong Index!\n"); }
+    }
 
 }
 void add_job(Employer *emp){
-    int choose=0;
     char choice[2];
-    char tmp[256], *token = NULL;
+    char tmp[256];
     FILE *f1 = fopen(fileJobs, "a+");
     char  input_string[100];
     char line[256] = "";
@@ -507,9 +520,9 @@ void add_job(Employer *emp){
         scanf("%s", choice);
     }while (strcmp(choice, "1") != 0 && (strcmp(choice, "2") != 0));
     if (strcmp(choice, "1") != 0)
-        strcat(line, "half time");
+        strcat(line, "half-time");
     else
-        strcat(line, "full time");
+        strcat(line, "full-time");
 
     strcat(line, ",");
     do {
@@ -633,7 +646,6 @@ bool sign_up_employee(Employee* emp) {
 }
 bool sign_up_employer(Employer* emp){
     char input[49];
-    int age;
     printf("SIGN UP:\n");
 
     do {
@@ -644,20 +656,21 @@ bool sign_up_employer(Employer* emp){
 
     do {
         printf("Enter your Password:");
-        scanf("%s", input);
+        scanf(" %s", input);
     } while (!check_password(input));
     strcpy(emp->password, input);
 
 
     do {
         printf("Reenter your password:");
-        scanf("%s", input);
+        scanf(" %s", input);
     } while (strcmp(emp->password, input) != 0);
 
+    clearBuff();
     do{
         printf("Enter your ID:");
-        scanf("%s", input);
-    }while(check_id_in_system(input, fileEmployer) && strlen(emp->ID));
+        scanf(" %s", input);
+    }while(check_id_in_system(input, fileEmployer) || !check_ID(input));
 
     init_question(emp->mail);
 
@@ -1024,7 +1037,7 @@ void get_status(const char* employee_mail) {
 }
 
 
-//forget password and
+//forget password (3 functions)
 bool check_question(const char* mail)
 {
     char answer[30];
@@ -1052,7 +1065,6 @@ bool check_question(const char* mail)
     fclose(f);
     return true;
 }
-
 void init_question(const char* mail)
 {
     FILE* f = fopen(fileSecurityQuestion, "a+");
@@ -1086,7 +1098,6 @@ void init_question(const char* mail)
     fprintf(f, line, "%s");
     fclose(f);
 }
-
 void forget_password(const char* mail){
     if (check_question(mail)) {
         char res1[13];
@@ -1105,6 +1116,8 @@ void forget_password(const char* mail){
 }
 
 
+
+//conversation : this function open file and the user can send message
 void conversations(char* mail, char* filename)
 {
     char cnversationinput[150];
@@ -1137,7 +1150,7 @@ void employee_Menu(Employee* emp){
     char choice[3];
     int ans;
     do{
-        printf("Please choose an option:\n1 - Search for available job\n2 - Edit account\n3 - Check requests status\n4 - Upload CV\n5 - Log out\n------>");
+        printf("hi %s\n Please choose an option:\n1 - Search for available job\n2 - Edit account\n3 - Check requests status\n4 - Upload CV\n5 - Log out\n------>", emp->first_name);
         do{
             scanf("%s", choice);
         } while (strcmp(choice,"1") != 0 && strcmp(choice, "2") != 0 &&strcmp(choice,"3") != 0 && strcmp(choice, "4") != 0 && strcmp(choice,"5") != 0);
@@ -1155,7 +1168,7 @@ void employee_Menu(Employee* emp){
                 get_status(emp->mail);
                 break;
             case 4:
-                printf(upload_cv(emp) ? "CV uploaded succeesfully\n" : "failed to upload your file\n");
+                printf(upload_cv(emp) ? "CV uploaded successfully\n" : "failed to upload your file\n");
                 break;
             case 5:
 
@@ -1201,7 +1214,7 @@ int main(){
     Employer* emp1 = malloc(sizeof(Employer));
     Employee* emp2 = malloc(sizeof(Employee));
 
-    printf("Welcome.Its job portal system who are you ?\n1 - Employee\n2 - Employer\n");
+    printf("Welcome.Its job portal system.\n who are you ?\n1 - Employee\n2 - Employer\n");
     do{
         printf("Enter your answer : ");
         scanf("%s", choice);
@@ -1220,6 +1233,7 @@ int main(){
 
                 case 1:
                     sign_up_employee(emp2);
+                    save_employee(emp2);
                 case 2:
                     emp2 = sign_in_employee();
                     if (emp2){employee_Menu(emp2);
@@ -1239,6 +1253,7 @@ int main(){
             switch (ans) {
                 case 1:
                     sign_up = sign_up_employer(emp1);
+                    save_employer(emp1);
                 case 2:
                     emp1 = sign_in_employer();
                     if(emp1){employerMenu(emp1);}
@@ -1250,6 +1265,3 @@ int main(){
     }
     return 0;
 }
-
-
-
