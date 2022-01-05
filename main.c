@@ -86,7 +86,6 @@ bool check_mail_in_system(char* mail, char* theFile){
         token = strtok(wrd, ",");
         if (strcmp(token, mail) == 0 ){
             fclose(file);
-            printf("\nthis mail is already exist. try again\n");
             return true;
         }
     }
@@ -604,13 +603,13 @@ bool sign_up_employee(Employee* emp) {
     strcpy(emp->phone, input);
 
     do {
-        printf("Enter your mail:");
+        printf("Your mail can only end with .com or .co.il\nEnter your mail :\n-------->");
         scanf("%s", input);
     }while(!check_email(input) || check_mail_in_system(input, fileEmployee) || !check_comma(input));
     strcpy(emp->mail, input);
 
     do {
-        printf("Enter your Password:");
+        printf("our password must be until 12 characters and minimum upper letter, small letter and one digit.\nEnter your Password:\n-------->");
         scanf("%s", input);
     } while (!check_password(input));
     strcpy(emp->password, input);
@@ -622,7 +621,7 @@ bool sign_up_employee(Employee* emp) {
     } while (strcmp(emp->password, input) != 0);
 
     do{
-        printf("enter you ID please");
+        printf("enter you ID please ( dont forget, ID can only have 9 characters)\n-------->");
         scanf("%s", input);
     }while(!check_ID(input) || check_id_in_system(input, fileEmployee));
     strcpy(emp->ID, input);
@@ -672,13 +671,15 @@ bool sign_up_employer(Employer* emp){
     printf("SIGN UP:\n");
 
     do {
-        printf("Enter your mail:");
+        printf("Your mail can only end with .com or .co.il\nEnter your mail :\n-------->");
         scanf("%s", input);
+        if (check_mail_in_system(input, fileEmployer))
+            printf("\nthis mail is already exist. try again\n");
     }while(!check_comma(input) ||  !check_email(input) || check_mail_in_system(input, fileEmployer));
     strcpy(emp->mail, input);
 
     do {
-        printf("Enter your Password:");
+        printf("your password must be until 12 characters and minimum upper letter, small letter and one digit.\nEnter your Password:\n-------->");
         scanf(" %s", input);
     } while (!check_password(input));
     strcpy(emp->password, input);
@@ -691,7 +692,7 @@ bool sign_up_employer(Employer* emp){
 
     clearBuff();
     do{
-        printf("Enter your ID:");
+        printf("enter you ID please ( dont forget, ID can only have 9 characters)\n-------->");
         scanf(" %s", input);
     }while(check_id_in_system(input, fileEmployer) || !check_ID(input));
     strcpy(emp->ID, input);
@@ -769,7 +770,7 @@ Employee* sign_in_employee() {
     //strcpy(emp->mail, input1);
     strcpy(password, get_pass_by_mail(input1, fileEmployee));// 'get_pass_by_mail()' return the password of the account if exist in the system.
     do {
-        printf("enter your password. if your forgot password, enter '1'\nPassword: ");//ask user for password.
+        printf("enter your password. if your forgot password, enter '1'\nPassword:\n-------->");//ask user for password.
         scanf("%s", input2);
         if (check_comma(input2) && strcmp(input2, password) == 0) {
             //emp = make_employee_from_file(input1);
@@ -820,11 +821,14 @@ Employer* sign_in_employer() {
     } while (true);
     strcpy(password, get_pass_by_mail(input1, fileEmployer));// 'get_pass_by_mail()' return the password of the account if exist in the system.
     do {
-        printf("Password: ");//ask user for password.
+        printf("enter your password. if your forgot password, enter '1'\nPassword: \n-------->");//ask user for password.
         scanf("%s", input2);
         if (check_comma(input2) && strcmp(input2, password) == 0) {
             emp = make_employer_from_file(input1);
             break;
+        }
+        else if (strlen(input2) == 1 && strcmp(input2, "1") == 0) {
+            forget_password(input1);
         }
     }while(true);
     return emp;
@@ -1185,7 +1189,7 @@ void employee_Menu(Employee* emp){
     char choice[3];
     int ans;
     do{
-        printf("hi %s\n Please choose an option:\n1 - Search for available job\n2 - Edit account\n3 - Check requests status\n4 - Upload CV\n5 - Log out\n------>", emp->first_name);
+        printf("HI %s\n Please choose an option:\n1 - Search for available job\n2 - Edit account\n3 - Check requests status\n4 - Upload CV\n5 - Log out\n-------->", emp->first_name);
         do{
             scanf("%s", choice);
         } while (strcmp(choice,"1") != 0 && strcmp(choice, "2") != 0 &&strcmp(choice,"3") != 0 && strcmp(choice, "4") != 0 && strcmp(choice,"5") != 0);
@@ -1219,7 +1223,7 @@ void employerMenu(Employer *emp)
     int choice;
     do {
         do {
-            printf("Please choose an option:\n 1. Post new job\n2. Delete existing job \n3. Check For Candidates\n4. Log out\n");
+            printf("Please choose an option:\n1. Post new job\n2. Delete existing job \n3. Check For Candidates\n4. Log out\n-------->");
             scanf("%d", &choice);
         } while (choice < 1 || choice > 5);
         switch (choice)
@@ -1252,7 +1256,7 @@ int main(){
     Printing_welcome();
     printf("Welcome.Its job portal system.\n who are you ?\n1 - Employee\n2 - Employer\n");
     do{
-        printf("Enter your answer : ");
+        printf("---------->");
         scanf("%s", choice);
     }while(strcmp(choice,"1") != 0 && strcmp(choice, "2") != 0);
     int ans = atoi(choice);
@@ -1261,7 +1265,7 @@ int main(){
         case 1:
             printf("welcome Employee. what do you want to do ?\n1 - sign up\n2 -sign in\nif you're forget password, enter in sign in and tap '1'\n");
             do{
-                printf("\nEnter your answer : ");
+                printf("---------->");
                 scanf("%s", choice);
             }while(strcmp(choice,"1") != 0 && strcmp(choice, "2") != 0);
             ans = atoi(choice);
@@ -1282,7 +1286,7 @@ int main(){
         case 2:
             printf("welcome Employer. what do you want to do ?\n1 - sign up\n2 -sign in\n");
             do{
-                printf("Enter your answer : ");
+                printf("---------->");
                 scanf("%s", choice);
             }while(strcmp(choice,"1") != 0 && strcmp(choice, "2") != 0);
             ans = atoi(choice);
