@@ -14,7 +14,7 @@
 #define Question_tree "What is your mother's name"
 //Structs
 typedef struct Employee {
-    char mail[50], password[13], first_name[20], last_name[20], ID[10], gender[7], phone[11], location[10], cv_file_name[30], pud_file_name[30];
+    char mail[50], password[13], first_name[20], last_name[20], ID[10], gender[7], phone[11], location[10], cv_file_name[30];
     int age;
 } Employee;
 typedef struct Employer {
@@ -86,6 +86,7 @@ bool check_mail_in_system(char* mail, char* theFile){
         token = strtok(wrd, ",");
         if (strcmp(token, mail) == 0 ){
             fclose(file);
+            printf("\nthis mail is already exist. try again\n");
             return true;
         }
     }
@@ -179,6 +180,29 @@ bool check_ID(const char* id) {
         return true;
     }
 }
+void Printing_welcome(){
+    FILE *fptr;
+
+    char c;
+
+    // Open file
+    fptr = fopen("welcome.txt", "r");
+    if (fptr == NULL)
+    {
+        printf("Cannot open file \n");
+        exit(0);
+    }
+
+    // Read contents from file
+    c = fgetc(fptr);
+    while (c != EOF)
+    {
+        printf ("%c", c);
+        c = fgetc(fptr);
+    }
+
+    fclose(fptr);
+}
 
 void clearBuff(){
     int c;
@@ -235,17 +259,6 @@ void print_employee(Employee* emp) {
         FILE* tmp = fopen(emp->cv_file_name, "r");
         if (tmp) {
             printf("CV: \n");
-            while (fgets(buffer, 256, tmp)) {
-                puts(buffer);
-            }
-            fclose(tmp);
-        }
-    }
-    if (strcmp(emp->pud_file_name, "None")) {
-
-        FILE* tmp = fopen(emp->pud_file_name, "r");
-        if (tmp) {
-            printf("personal user details: \n");
             while (fgets(buffer, 256, tmp)) {
                 puts(buffer);
             }
@@ -608,11 +621,20 @@ bool sign_up_employee(Employee* emp) {
         scanf("%s", input);
     } while (strcmp(emp->password, input) != 0);
 
+    do{
+        printf("enter you ID please");
+        scanf("%s", input);
+    }while(!check_ID(input) || check_id_in_system(input, fileEmployee));
+    strcpy(emp->ID, input);
+
     do {
         printf("enter new gender please :\n1.male\n2.female\n");
         scanf("%s", input);
     }while(strcmp("1", input) != 0 && strcmp("2", input) != 0);
-    strcpy(emp->gender, input);
+    if (strcmp(input, "1") ==0)
+        strcpy(emp->gender, "male");
+    else
+        strcpy(emp->gender, "female");
 
     do {
         printf("choose your new area :\n1.south\n2.jerusalem\n3.center\n4.north\n5.negev\n");
@@ -636,8 +658,9 @@ bool sign_up_employee(Employee* emp) {
 
     do{
         printf("enter your new age :");
-        scanf("%d", &age);
-    }while(!(age >= 18 || age <= 120));
+        scanf("%s", input);
+        age = atoi(input);
+    }while(!(age >= 18 && age <= 120));
     emp->age = age;
 
     init_question(emp->mail);
@@ -651,7 +674,7 @@ bool sign_up_employer(Employer* emp){
     do {
         printf("Enter your mail:");
         scanf("%s", input);
-    }while(!check_comma(input) &&  !check_email(input) && check_mail_in_system(input, fileEmployee));
+    }while(!check_comma(input) ||  !check_email(input) || check_mail_in_system(input, fileEmployer));
     strcpy(emp->mail, input);
 
     do {
@@ -671,6 +694,7 @@ bool sign_up_employer(Employer* emp){
         printf("Enter your ID:");
         scanf(" %s", input);
     }while(check_id_in_system(input, fileEmployer) || !check_ID(input));
+    strcpy(emp->ID, input);
 
     init_question(emp->mail);
 
@@ -723,8 +747,6 @@ Employee* make_employee_from_file(const char* mail) {
             strcpy(res->location, token);
             token = strtok(NULL, ",");
             strcpy(res->cv_file_name, token);
-            token = strtok(NULL, ",");
-            strcpy(res->pud_file_name, token);
         }
     }
     return res;
@@ -735,13 +757,15 @@ Employee* sign_in_employee() {
     int tries = 0;
     char input1[50] = "", input2[50];// to store the user inputs.
     char password[13] = "";// to store the password.
+    printf("SIGN IN. please enter you information for enter in the system\n");
     do {
         printf("Mail: ");//ask user for mail.
         scanf("%s", input1);
-        if (check_comma(input1) && check_mail_in_system(input1, fileEmployee))
+        /*if (check_comma(input1) && check_mail_in_system(input1, fileEmployee))
             emp = make_employee_from_file(input1);
-            break;
-    }while(true);
+            break;*/
+    }while(!check_comma(input1) || !check_mail_in_system(input1, fileEmployee));
+    emp = make_employee_from_file(input1);
     //strcpy(emp->mail, input1);
     strcpy(password, get_pass_by_mail(input1, fileEmployee));// 'get_pass_by_mail()' return the password of the account if exist in the system.
     do {
@@ -784,11 +808,14 @@ Employer* sign_in_employer() {
     Employer* emp = NULL;
     char input1[50] = "", input2[50];// to store the user inputs.
     char password[13] = "";// to store the password.
+    printf("SIGN IN : enter your information\n");
     do {
         printf("Mail: ");//ask user for mail.
         scanf("%s", input1);
-        if (check_comma(input1) && check_mail_in_system(input1, fileEmployer))
+        if (check_mail_in_system(input1, fileEmployer))
             break;
+        printf("you mail is not in the system.\n if you dont remember close the program and try again\n");
+
 
     } while (true);
     strcpy(password, get_pass_by_mail(input1, fileEmployer));// 'get_pass_by_mail()' return the password of the account if exist in the system.
@@ -912,8 +939,6 @@ void save_employee(Employee* to_save) {
     strcat(line, to_save->location);
     strcat(line, ",");
     strcat(line, to_save->cv_file_name);
-    strcat(line, ",");
-    strcat(line, to_save->pud_file_name);
     strcat(line, "\n");
     fprintf(f2, line ,"%s");
     fclose(f1);
@@ -1050,18 +1075,27 @@ bool check_question(const char* mail)
     printf("%s? ", Question_one);
     scanf(" %[^\n]", answer);
 
-    if (strcmp(token, answer)) { fclose(f); return false; }
+    if (strcmp(token, answer)) {
+        fclose(f);
+        printf("no correspondence ! \ntry again enter your password or tape 1 if you forget\n");
+        return false; }
     token = strtok(NULL, ",");
     printf("%s? ", Question_two);
     //fgets(answer, 30, stdin);
     scanf(" %[^\n]", answer);
 
-    if (strcmp(token, answer)) { fclose(f); return false; }
+    if (strcmp(token, answer)) {
+        printf("no correspondence ! \ntry again enter your password or tape 1 if you forget\n");
+        fclose(f);
+        return false; }
     token = strtok(NULL, "\n");
     printf("%s? ", Question_tree);
     scanf(" %[^\n]", answer);
 
-    if (strcmp(token, answer)) { fclose(f); return false; }
+    if (strcmp(token, answer)) {
+        fclose(f);
+        printf("no correspondence ! \ntry again enter your password or tape 1 if you forget\n");
+        return false; }
     fclose(f);
     return true;
 }
@@ -1097,6 +1131,7 @@ void init_question(const char* mail)
     strcat(line, "\n");
     fprintf(f, line, "%s");
     fclose(f);
+    printf("ALL INFORMATION'S ARE SAVE CORRECTLY\n");
 }
 void forget_password(const char* mail){
     if (check_question(mail)) {
@@ -1106,11 +1141,11 @@ void forget_password(const char* mail){
         strcpy(res2, get_pass_by_mail(mail, fileEmployer));
         if (strcmp(res1, "not found")) {
             printf("Employee \n ");
-            printf("%s", res1);
+            printf("success ! you password is : %s\n", res1);
         }
         if (strcmp(res2, "not found")) {
             printf("Employer\n");
-            printf("%s", res2);
+            printf("success ! you password is : %s\n", res2);
         }
     }
 }
@@ -1214,6 +1249,7 @@ int main(){
     Employer* emp1 = malloc(sizeof(Employer));
     Employee* emp2 = malloc(sizeof(Employee));
 
+    Printing_welcome();
     printf("Welcome.Its job portal system.\n who are you ?\n1 - Employee\n2 - Employer\n");
     do{
         printf("Enter your answer : ");
