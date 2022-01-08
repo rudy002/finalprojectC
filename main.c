@@ -374,7 +374,7 @@ char * request_search_job(){
                 printf("you choose : time to work. choose possibility you want to search.\n1.half-time\n2.full-time\n-----> ");
                 scanf("%s", answers);
             }while(strcmp(answers,"1") != 0  && strcmp(answers,"2") != 0);
-            if (strcmp(answers,"1") != 0)
+            if (strcmp(answers,"1") == 0)
                 return "half-time";
             else
                 return "full-time";
@@ -479,31 +479,34 @@ void apply_for_job(const char* employee_mail, Job** job_list) {
 
         int i = 0, choise;
         char choice[3];
-        while (print_job(*job_list[i++])) {}
+        bool flag = false;
+        while (print_job(*job_list[i])) {i++;}
         do {
-            printf("Enter Your Choice: ");
+            printf("Enter Your Choice\nif you want return to the menu, enter 0\n--------> ");
             scanf("%s", choice);
             choise = atoi(choice);
-        } while (choise == 0);
-        if (choise >= 1 && choise <= i + 1) {
-            char request[256];
-            strcpy(request, job_list[choise - 1]->mail_Employer);
-            strcat(request, ",");
-            strcat(request, employee_mail);
-            strcat(request, ",");
-            strcat(request, job_list[choise - 1]->company);
-            strcat(request, ",");
-            strcat(request, job_list[choise - 1]->scope);
-            strcat(request, ",");
-            strcat(request, "waiting\n");
-            FILE *f = fopen(fileJobRequest, "a+");
-            if (f) {
-                fputs(request, f);
-                printf("your request added to the system.\n");
-            }
-            fclose(f);
+            if(choise ==0) break;
 
-        } else { printf("Wrong Index!\n"); }
+            else if (choise >= 1 && choise < i + 1) {
+                char request[256];
+                strcpy(request, job_list[choise - 1]->mail_Employer);
+                strcat(request, ",");
+                strcat(request, employee_mail);
+                strcat(request, ",");
+                strcat(request, job_list[choise - 1]->company);
+                strcat(request, ",");
+                strcat(request, job_list[choise - 1]->scope);
+                strcat(request, ",");
+                strcat(request, "waiting\n");
+                FILE *f = fopen(fileJobRequest, "a+");
+                if (f) {
+                    fputs(request, f);
+                    printf("your request added to the system.\n");
+                }
+                fclose(f);
+
+            } else { printf("Wrong Index! go Back to the menu\n"); }
+        } while (1);
     }
 
 }
@@ -949,6 +952,8 @@ void save_employee(Employee* to_save) {
     fclose(f2);
     remove(fileEmployee);
     rename("tmp.csv", fileEmployee);
+
+    free(to_save);
 
 
 }//log out

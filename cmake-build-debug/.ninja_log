@@ -1,7 +1,3 @@
 # ninja log v5
-1	52	1641293472488790790	CMakeFiles/finalprojectC.dir/main.c.o	a47c591a56550ba
-52	84	1641293472522048521	finalprojectC	ccab2cddd9fab79b
-1	315	1641401495897467883	CMakeFiles/finalprojectC.dir/main.c.o	a47c591a56550ba
-316	363	1641401495947256479	finalprojectC	ccab2cddd9fab79b
-1	66	1641401833251656901	CMakeFiles/finalprojectC.dir/main.c.o	a47c591a56550ba
-66	102	1641401833288922682	finalprojectC	ccab2cddd9fab79b
+0	77	1641404872067453741	CMakeFiles/finalprojectC.dir/main.c.o	a47c591a56550ba
+78	165	1641404872164006404	finalprojectC	ccab2cddd9fab79b
